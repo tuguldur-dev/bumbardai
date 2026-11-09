@@ -1,0 +1,441 @@
+.quest-atlas {
+  display: block;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 24px;
+  isolation: isolate;
+}
+
+.quest-atlas-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.2rem, 4vw, 2.4rem);
+  background: radial-gradient(ellipse at 86% 40%, #56368d, #2b1a4b 53%, #1f1339 100%);
+  color: #fff;
+}
+
+.quest-atlas-art {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(64%, 530px);
+  height: 100%;
+  color: #e5dbff;
+  pointer-events: none;
+}
+
+.quest-atlas-hero-copy {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.quest-atlas-kicker,
+.quest-atlas-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.67rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.quest-atlas-kicker {
+  color: #e0d2ff;
+}
+
+.quest-atlas-hero h2 {
+  margin: 0.36rem 0 0.24rem;
+  font-size: clamp(2.05rem, 5vw, 3.55rem);
+  letter-spacing: -0.065em;
+}
+
+.quest-atlas-hero-copy > p:last-of-type {
+  color: #f1eaff;
+  font-size: 0.9rem;
+}
+
+.quest-atlas-progress {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: #e0d2ff;
+  font-size: 0.75rem;
+}
+
+.quest-atlas-progress strong {
+  color: #fff;
+}
+
+.quest-atlas-progress progress {
+  width: min(13rem, 100%);
+  height: 0.4rem;
+  overflow: hidden;
+  appearance: none;
+  border: 0;
+  border-radius: 99px;
+  background: #ffffff35;
+}
+
+.quest-atlas-progress progress::-webkit-progress-bar {
+  background: #ffffff35;
+}
+
+.quest-atlas-progress progress::-webkit-progress-value {
+  border-radius: 99px;
+  background: #cbb7ff;
+}
+
+.quest-atlas-progress progress::-moz-progress-bar {
+  border-radius: 99px;
+  background: #cbb7ff;
+}
+
+.quest-atlas-body {
+  display: grid;
+  gap: 0.8rem;
+  padding: clamp(0.9rem, 3vw, 1.65rem);
+}
+
+.quest-atlas-section-label {
+  color: var(--muted);
+}
+
+.quest-atlas-paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.quest-atlas [data-branch] {
+  --path-color: #6540bd;
+  --path-wash: #f2eaff;
+  --path-line: #dfd2f7;
+}
+
+.quest-atlas [data-branch='technical'] {
+  --path-color: #2467a5;
+  --path-wash: #e9f4ff;
+  --path-line: #c8e1f7;
+}
+
+.quest-atlas [data-branch='venue'] {
+  --path-color: #965116;
+  --path-wash: #fff2e2;
+  --path-line: #f0d7b6;
+}
+
+.quest-atlas [data-branch='community'] {
+  --path-color: #14725f;
+  --path-wash: #e7f8f1;
+  --path-line: #bde8d9;
+}
+
+:root[data-theme='dark'] .quest-atlas [data-branch] {
+  --path-color: #d0b5ff;
+  --path-wash: #342649;
+  --path-line: #584573;
+}
+
+:root[data-theme='dark'] .quest-atlas [data-branch='technical'] {
+  --path-color: #a8d6ff;
+  --path-wash: #233647;
+  --path-line: #405c77;
+}
+
+:root[data-theme='dark'] .quest-atlas [data-branch='venue'] {
+  --path-color: #ffd099;
+  --path-wash: #443227;
+  --path-line: #705037;
+}
+
+:root[data-theme='dark'] .quest-atlas [data-branch='community'] {
+  --path-color: #a7e8d3;
+  --path-wash: #213b35;
+  --path-line: #395f55;
+}
+
+.quest-atlas .quest-atlas-path {
+  height: auto;
+  min-width: 0;
+  min-height: 3.4rem;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  white-space: normal;
+}
+
+.quest-atlas .quest-atlas-path:hover,
+.quest-atlas .quest-atlas-path[aria-pressed='true'] {
+  border-color: var(--path-color);
+  background: var(--path-wash);
+}
+
+.quest-atlas-path-icon,
+.quest-atlas-next-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--path-wash);
+  color: var(--path-color);
+}
+
+.quest-atlas-path[aria-pressed='true'] .quest-atlas-path-icon {
+  background: var(--surface);
+}
+
+.quest-atlas-path-copy {
+  display: grid;
+  gap: 0.08rem;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.quest-atlas-path-copy > span {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.quest-atlas-route {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--path-line);
+  border-radius: 16px;
+  background: var(--path-wash);
+}
+
+.quest-atlas-route-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.35rem;
+}
+
+.quest-atlas-route-header .quest-atlas-section-label {
+  color: var(--path-color);
+}
+
+.quest-atlas-route-header h3 {
+  margin: 0.25rem 0;
+  font-size: 1.2rem;
+}
+
+.quest-atlas-route-header p:last-child {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.quest-atlas-route-emblem {
+  flex-shrink: 0;
+  color: var(--path-color);
+  opacity: 0.5;
+}
+
+.quest-atlas-track {
+  position: relative;
+  display: grid;
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  list-style: none;
+}
+
+.quest-atlas-track li {
+  position: relative;
+  min-width: 0;
+}
+
+.quest-atlas-track li:not(:last-child)::after {
+  position: absolute;
+  z-index: 0;
+  top: calc(50% + 1.05rem);
+  bottom: calc(-50% + 1.05rem);
+  left: 1.62rem;
+  border-left: 2px dashed var(--path-line);
+  content: '';
+}
+
+.quest-atlas-track li[data-state='completed']::after {
+  border-style: solid;
+  border-color: var(--path-color);
+}
+
+.quest-atlas .quest-atlas-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 3.4rem;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 12px;
+  color: var(--ink);
+  text-align: left;
+  white-space: normal;
+}
+
+.quest-atlas .quest-atlas-node:hover {
+  background: var(--surface);
+}
+
+.quest-atlas-node-marker {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 2.25rem;
+  place-items: center;
+  border: 1px solid var(--path-line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.quest-atlas-track li[data-state='available'] .quest-atlas-node-marker,
+.quest-atlas-track li[data-state='active'] .quest-atlas-node-marker,
+.quest-atlas-track li[data-state='completed'] .quest-atlas-node-marker {
+  border-color: var(--path-color);
+  color: var(--path-color);
+}
+
+.quest-atlas-track li[data-state='active'] .quest-atlas-node-marker {
+  box-shadow: 0 0 0 4px var(--path-line);
+}
+
+.quest-atlas-node-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.5rem;
+  line-height: 1.15;
+}
+
+.quest-atlas-node-status {
+  grid-column: 1 / -1;
+  margin-bottom: 0.2rem;
+  color: var(--muted);
+  font-size: 0.61rem;
+  font-weight: 740;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.quest-atlas-node-copy strong {
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.quest-atlas-node-xp {
+  color: var(--path-color);
+  font-size: 0.68rem;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.quest-atlas .quest-atlas-next {
+  display: flex;
+  width: calc(100% - 1.4rem);
+  height: auto;
+  min-height: 3.35rem;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  margin: 0.1rem 0.7rem 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--path-line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  white-space: normal;
+}
+
+.quest-atlas .quest-atlas-next:hover {
+  border-color: var(--path-color);
+}
+
+.quest-atlas-next .quest-atlas-section-label {
+  color: var(--path-color);
+  letter-spacing: 0.08em;
+}
+
+.quest-atlas-next-arrow {
+  margin-left: auto;
+  color: var(--path-color);
+}
+
+.quest-atlas-finished {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 1rem 1rem;
+  color: var(--path-color);
+  font-weight: 700;
+}
+
+.quest-atlas-detail-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+@media (min-width: 650px) {
+  .quest-atlas-track {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 0.6rem 0.7rem 0.8rem;
+  }
+
+  .quest-atlas-track li:not(:last-child)::after {
+    top: 1.55rem;
+    right: -50%;
+    bottom: auto;
+    left: 50%;
+    border-top: 2px dashed var(--path-line);
+    border-left: 0;
+  }
+
+  .quest-atlas-track li[data-state='completed']::after {
+    border-style: solid;
+    border-color: var(--path-color);
+  }
+
+  .quest-atlas .quest-atlas-node {
+    height: 100%;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.45rem;
+    padding: 0.42rem 0.18rem;
+    text-align: center;
+  }
+
+  .quest-atlas-node-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .quest-atlas-node-status {
+    margin: 0;
+  }
+
+  .quest-atlas-node-xp {
+    margin-top: auto;
+  }
+}
+
+@media (min-width: 1020px) {
+  .quest-atlas-paths {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
