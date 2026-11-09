@@ -3,4 +3,4 @@ kind: Component
 images:
   - name: hallway-quest
     newName: docker.io/tuguldurdev/bumbardai
-    digest: sha256:2810374073bf7355a383cda3246dd02428751efe5b8e1b1d3338b2774161cf12
+    digest: sha256:f523e3548f80a8a2d8e543d6c56ca3af7f459c66fd7025b6f4e34616077db8d0
