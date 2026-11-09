@@ -28,6 +28,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: hallway-elasticsearch
+        dash0.com/enable: "false"
     spec:
       automountServiceAccountToken: false
       securityContext:
