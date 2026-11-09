@@ -115,7 +115,10 @@ function Reminders({ user }: { user: User }) {
 }
 function Credentials() {
   const query = useResource('credentials', () => api('/mcp/credentials', credentialSchema.array()));
-  const create = useAction<{ token: string }, { label: string; canWrite: boolean }>(
+  const create = useAction<
+    { id: string; token: string },
+    { label: string; canWrite: boolean; canSchedule: boolean }
+  >(
     (input) =>
       api('/mcp/credentials', credentialSchema.extend({ token: z.string() }), 'POST', input),
     ['credentials'],
@@ -130,14 +133,41 @@ function Credentials() {
         <KeyRound size={20} /> Connect an AI client
       </h2>
       <p>
-        Use a credential with the local Hallway Quest MCP server. New credentials expire in 30 days.
+        Connect Gemini Apps or another remote MCP client. Credentials expire in 30 days and can be
+        revoked here.
       </p>
+      <div className="mcp-setup">
+        <strong>Set up Gemini Apps</strong>
+        <ol>
+          <li>Create a credential below and copy the client ID and secret when they appear.</li>
+          <li>
+            In{' '}
+            <a href="https://gemini.google.com/" target="_blank" rel="noreferrer">
+              Gemini web
+            </a>
+            , open Settings → Connected Apps → Add a custom app.
+          </li>
+          <li>
+            Enter the public HTTPS endpoint <code>{window.location.origin}/mcp</code>. Under
+            Advanced features, enter the client ID and secret, then sign in to Hallway Quest and
+            approve access.
+          </li>
+          <li>
+            In Gemini web or mobile, select <code>@Hallway Quest</code>. Use voice input to ask
+            Scout to recommend an activity or add an event if schedule creation is enabled.
+          </li>
+        </ol>
+      </div>
       <form
         className="form"
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
-          create.run({ label: String(data.get('label')), canWrite: data.has('canWrite') });
+          create.run({
+            label: String(data.get('label')),
+            canWrite: data.has('canWrite'),
+            canSchedule: data.has('canSchedule'),
+          });
         }}
       >
         <label>
@@ -147,6 +177,9 @@ function Credentials() {
         <label className="check-label">
           <Checkbox name="canWrite" /> Allow quest completion
         </label>
+        <label className="check-label">
+          <Checkbox name="canSchedule" /> Allow schedule event creation
+        </label>
         <Button type="submit" disabled={create.loading}>
           Create credential
         </Button>
@@ -154,7 +187,10 @@ function Credentials() {
       {create.data && (
         <div className="inline-note credential">
           <label>
-            Copy this credential now
+            Client ID <Input readOnly value={create.data.id} />
+          </label>
+          <label>
+            Client secret (copy now)
             <Input readOnly value={create.data.token} onFocus={(event) => event.target.select()} />
           </label>
           <Button variant="secondary" onClick={() => create.reset()}>
@@ -165,13 +201,18 @@ function Credentials() {
       {query.data?.map((item) => (
         <div className="inline-note" key={item.id}>
           <span>
-            {item.label} · {item.canWrite ? 'Quest completion allowed' : 'Read only'}
+            {item.label} ·{' '}
+            {[
+              ...(item.canWrite ? ['quest completion'] : []),
+              ...(item.canSchedule ? ['schedule creation'] : []),
+            ].join(', ') || 'read only'}
           </span>
           <Button variant="ghost" disabled={revoke.loading} onClick={() => revoke.run(item.id)}>
             Revoke
           </Button>
         </div>
       ))}
+      <p className="muted">Gemini asks you to confirm write actions before it runs them.</p>
       <ErrorText error={query.error || create.error || revoke.error} />
     </Card>
   );

@@ -6,6 +6,7 @@ import {
 } from '@hallway/shared/responses';
 import { z } from 'zod';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Temporal } from '@js-temporal/polyfill';
 import { CalendarDays, ChevronLeft, ChevronRight, Download, Plus, Upload } from 'lucide-react';
 import { category, conferenceZone, eventInput, type EventInput } from '@hallway/shared';
@@ -51,10 +52,12 @@ function EventEditor({
   current,
   day,
   close,
+  onSaved,
 }: {
   current: Event | null;
   day: string;
   close: () => void;
+  onSaved: (event: Event) => void;
 }) {
   const [allDay, setAllDay] = useState(!!current && !current.startsAt);
   const [validation, setValidation] = useState<string>();
@@ -85,7 +88,10 @@ function EventEditor({
       {
         onSuccess: (result) => {
           if (result.conflicts?.length) setPending(event);
-          else close();
+          else {
+            if (result.event) onSaved(result.event);
+            close();
+          }
         },
       },
     );
@@ -336,12 +342,27 @@ export function Schedule({ user }: { user: User }) {
   const [week, setWeek] = useState(false);
   const [edit, setEdit] = useState<'new' | Event | null>(null);
   const [importing, setImporting] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const editId = params.get('edit');
+  function closeEditor() {
+    setEdit(null);
+    if (editId)
+      setParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          next.delete('edit');
+          return next;
+        },
+        { replace: true },
+      );
+  }
   const query = useResource('events', () => api('/events', eventSchema.array()));
   const dates = Array.from({ length: week ? 7 : 1 }, (_, index) => addDays(day, index));
+  const linked = query.data?.find((item) => item.id === editId);
   const selected =
     typeof edit === 'object' && edit
       ? (query.data?.find((item) => item.id === edit.id) ?? edit)
-      : null;
+      : (linked ?? null);
   return (
     <>
       <Heading
@@ -354,6 +375,10 @@ export function Schedule({ user }: { user: User }) {
           </Button>
         }
       />
+      {editId && query.loading && <Loading />}
+      {editId && query.data && !linked && (
+        <ErrorText error="This activity is no longer on your schedule." />
+      )}
       <Card className="card block dashboard-card">
         <div className="schedule-tools">
           <div className="button-row">
@@ -446,18 +471,22 @@ export function Schedule({ user }: { user: User }) {
         </a>
       </div>
       <Sheet
-        open={!!edit}
+        open={!!edit || !!linked}
         onOpenChange={(open) => {
-          if (!open) setEdit(null);
+          if (!open) closeEditor();
         }}
         title={selected ? 'Edit activity' : 'Add activity'}
       >
-        {edit && (
+        {(edit || linked) && (
           <EventEditor
             key={selected?.id ?? 'new'}
             current={selected}
             day={day}
-            close={() => setEdit(null)}
+            close={closeEditor}
+            onSaved={(event) => {
+              const eventDay = event.startsAt ? isoDay(event.startsAt) : event.day;
+              if (eventDay) setDay(eventDay);
+            }}
           />
         )}
       </Sheet>

@@ -24,7 +24,7 @@ for (const [name, tool] of Object.entries(mcpTools)) {
       description: tool.description,
       inputSchema: tool.input.shape,
       annotations: {
-        readOnlyHint: name !== 'complete_quest',
+        readOnlyHint: name !== 'complete_quest' && name !== 'create_schedule_event',
         destructiveHint: false,
         idempotentHint: name === 'complete_quest',
         openWorldHint: false,

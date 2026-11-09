@@ -27,8 +27,27 @@ export const profileInput = z.object({
   firstTime: z.boolean(),
   comfort: z.enum(['quiet', 'warming-up', 'outgoing']),
   difficulty,
+  showOnQuestLeaderboard: z.boolean().default(false),
   discoverable: z.boolean().default(false),
   shareBackground: z.boolean().default(false),
+  linkedinUrl: z
+    .string()
+    .trim()
+    .max(300)
+    .default('')
+    .refine((value) => {
+      if (!value) return true;
+      try {
+        const url = new URL(value);
+        return (
+          url.protocol === 'https:' &&
+          (url.hostname === 'linkedin.com' || url.hostname.endsWith('.linkedin.com'))
+        );
+      } catch {
+        return false;
+      }
+    }, 'Enter a valid LinkedIn profile URL'),
+  shareLinkedIn: z.boolean().default(false),
 });
 export const credentials = z.object({
   email: z

@@ -10,7 +10,9 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Compass, MessageCircle, QrCode, Sparkles, Timer, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { QuestLeaderboard } from './quest-leaderboard';
 import { api, useAction, useResource, type Award, type Quest } from '../../shared/api';
+import { QuestTree } from './quest-tree';
 import {
   Input,
   Card,
@@ -69,7 +71,7 @@ export function QuestCard({ quest, onAward }: { quest: Quest; onAward: (result: 
   const action = useAction<Award | { ok: true }, string>(
     (action) =>
       api('/quests/' + quest.id + '/action', awardSchema.or(okSchema), 'POST', { action }),
-    ['quests', 'today', 'progress'],
+    ['quests', 'today', 'progress', 'quest-leaderboard'],
   );
   const ice = useAction<{ icebreaker: string }, void>(
     () => api('/icebreaker', icebreakerSchema, 'POST', { questId: quest.id }),
@@ -196,17 +198,17 @@ export function Quests() {
   );
   const verify = useAction<{ verified: boolean }, string>(
     (code) => api('/quests/verify', z.object({ verified: z.literal(true) }), 'POST', { code }),
-    ['quests', 'today', 'progress'],
+    ['quests', 'today', 'progress', 'quest-leaderboard'],
   );
   const [award, setAward] = useState<Award>();
   const [verifying, setVerifying] = useState(false);
   const [scan, setScan] = useState(false);
   const [code, setCode] = useState('');
   const available = query.data?.find(
-    (quest) => quest.status === 'active' || quest.status === 'suggested',
+    (quest) => !quest.templateKey && (quest.status === 'active' || quest.status === 'suggested'),
   );
   const history = query.data?.filter(
-    (quest) => quest.status === 'completed' || quest.status === 'skipped',
+    (quest) => !quest.templateKey && (quest.status === 'completed' || quest.status === 'skipped'),
   );
   return (
     <>
@@ -227,6 +229,18 @@ export function Quests() {
             <QrCode size={18} /> Confirm a quest
           </Button>
         }
+      />
+      <QuestTree
+        renderActive={(quest, close) => (
+          <QuestCard
+            key={quest.id}
+            quest={quest}
+            onAward={(result) => {
+              close();
+              setAward(result);
+            }}
+          />
+        )}
       />
       {query.loading && <Loading />}
       <ErrorText error={query.error || create.error} />
@@ -252,6 +266,7 @@ export function Quests() {
           </Card>
         )
       )}
+      <QuestLeaderboard />
       {history && history.length > 0 && (
         <section className="section-gap">
           <h2>Quest history</h2>

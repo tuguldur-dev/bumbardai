@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dateKey } from './index.js';
+import { dateKey, eventInput } from './index.js';
 
 const empty = z.object({}).strict();
 const search = z
@@ -59,6 +59,11 @@ export const mcpTools = {
     description:
       'Complete an active quest and award XP once. Requires a credential with quest completion enabled.',
     input: z.object({ questId: z.string().uuid() }).strict(),
+  },
+  create_schedule_event: {
+    description:
+      'Create a new event on the attendee’s schedule. Requires a credential with schedule creation enabled. Returns conflicts without saving when the event overlaps.',
+    input: z.object({ event: eventInput }).strict(),
   },
   find_opt_in_connections: {
     description: 'Find attendees who have opted in to discovery.',

@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
+import { scheduleIntentSchema } from '@hallway/shared/responses';
 import { traced } from '../../shared/telemetry.js';
 import { ollamaCopy } from './ollama.js';
 
@@ -22,6 +23,8 @@ const prompts = {
     'Suggest up to three short optional preparation tasks based on the event category and attendee goals. Avoid claiming any item is an organizer requirement. Never invent prerequisites, times, or locations. Do not repeat existing checklist labels.',
   icebreaker:
     'Write one natural, low-pressure conference icebreaker. Use only supplied interests or the quest topic. Avoid requests for private information and avoid the previous icebreaker.',
+  schedule:
+    'Interpret the attendee request as a personal schedule event. Only create an event when the attendee clearly asked to schedule one and the title, local date, start time, and end time are unambiguous from the current request and recent conversation. Use the provided current time and IANA time zone to resolve relative dates. Never invent missing details. If a required detail is missing, ask one concise follow-up and return action clarify with event null. For a complete event, return action create, a short confirmation message, and exact local date and HH:mm times. Do not claim the event was saved; the server will validate and save it.',
 };
 type Capability = keyof typeof prompts;
 
@@ -108,3 +111,5 @@ export const newIcebreaker = (context: unknown) =>
   personalize('icebreaker', context, icebreakerCopy);
 export const preparationCopy = (context: unknown) =>
   personalize('checklist', context, checklistCopy);
+export const scheduleIntent = (context: unknown, question: string) =>
+  personalize('schedule', context, scheduleIntentSchema, question);

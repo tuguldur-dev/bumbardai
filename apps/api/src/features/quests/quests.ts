@@ -5,9 +5,11 @@ import { z } from 'zod';
 import { randomInt } from 'node:crypto';
 import { digest, HttpError, requireUser } from '../auth/auth.js';
 import { newIcebreaker, newQuestCopy } from '../assistant/assistant.js';
+import { questTree, skipTreeQuest, startTreeQuest } from './quest-tree.js';
 import { clock, freeUntil, localDay } from '../schedule/calendar.js';
 import { agenda } from '../schedule/events.js';
 import { db } from '../../shared/db.js';
+import { questLeaderboard } from './leaderboard.js';
 
 const rewards = { easy: 50, medium: 75, hard: 100 };
 const categories = [
@@ -68,7 +70,7 @@ export async function progress(userId: string) {
 }
 
 export async function generateQuest(user: User, persist = true) {
-  const existing = (await activeQuests(user.id))[0];
+  const existing = (await activeQuests(user.id)).find((quest) => !quest.templateKey);
   if (existing) return existing;
   const profile = profileInput.safeParse(user.profile).data;
   const now = clock(user.demo);
@@ -127,7 +129,7 @@ export async function generateQuest(user: User, persist = true) {
   return db.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id} FOR UPDATE`;
     const active = await tx.quest.findFirst({
-      where: { userId: user.id, status: { in: ['suggested', 'active'] } },
+      where: { userId: user.id, templateKey: null, status: { in: ['suggested', 'active'] } },
     });
     if (active) return active;
     return tx.quest.create({ data });
@@ -194,6 +196,9 @@ export async function icebreaker(user: User, questId?: string, topic?: string) {
 
 export function questRoutes(app: FastifyInstance) {
   app.get('/api/quests', async (request) => allQuests((await requireUser(request)).id));
+  app.get('/api/quests/leaderboard', async (request) =>
+    questLeaderboard(await requireUser(request)),
+  );
   app.get('/api/progress', async (request) => progress((await requireUser(request)).id));
   app.post('/api/quests/generate', async (request) => generateQuest(await requireUser(request)));
   app.post('/api/quests/:id/action', async (request) => {
@@ -203,12 +208,23 @@ export function questRoutes(app: FastifyInstance) {
       .object({ action: z.enum(['start', 'skip', 'complete']) })
       .parse(request.body);
     if (action === 'complete') return completeQuest(user.id, id);
+    if (
+      action === 'skip' &&
+      (await db.quest.findFirst({ where: { id, userId: user.id, templateKey: { not: null } } }))
+    )
+      return skipTreeQuest(user.id, id);
     const result = await db.quest.updateMany({
-      where: { id, userId: user.id, status: { in: ['suggested', 'active'] } },
+      where: { id, userId: user.id, templateKey: null, status: { in: ['suggested', 'active'] } },
       data: { status: action === 'start' ? 'active' : 'skipped' },
     });
     if (!result.count) throw new HttpError(409, 'This quest is no longer available.');
     return { ok: true };
+  });
+  app.get('/api/quests/tree', async (request) => questTree((await requireUser(request)).id));
+  app.post('/api/quests/tree/:key/start', async (request) => {
+    const user = await requireUser(request);
+    const { key } = z.object({ key: z.string().max(100) }).parse(request.params);
+    return startTreeQuest(user.id, key);
   });
   app.post('/api/icebreaker', async (request) => {
     const user = await requireUser(request);

@@ -56,6 +56,7 @@ export const catalogResultsSchema = z.object({
 export const questSchema = z.object({
   id,
   title: z.string(),
+  templateKey: z.string().nullable().optional(),
   mission: z.string(),
   icebreaker: z.string(),
   category: z.string(),
@@ -64,12 +65,39 @@ export const questSchema = z.object({
   status: z.enum(['suggested', 'active', 'completed', 'skipped']),
   mode,
 });
+const leaderboardPlacementSchema = z.object({
+  rank: z.number().int().positive(),
+  nickname: z.string().min(1).max(60),
+  xp: z.number().int().positive(),
+});
+export const questLeaderboardSchema = z.object({
+  leaders: leaderboardPlacementSchema.extend({ isViewer: z.boolean() }).array().max(10),
+  viewer: leaderboardPlacementSchema.nullable(),
+});
 export const progressSchema = z.object({
   xp: count,
   level: count,
   badges: z.string().array(),
   completed: count,
 });
+export const questTreeSchema = z.array(
+  z.object({
+    key: z.string(),
+    title: z.string(),
+    nodes: z.array(
+      z.object({
+        key: z.string(),
+        title: z.string(),
+        mission: z.string(),
+        icebreaker: z.string(),
+        difficulty,
+        minutes: z.number().int().positive(),
+        state: z.enum(['locked', 'available', 'active', 'completed']),
+        quest: questSchema.nullable(),
+      }),
+    ),
+  }),
+);
 export const awardSchema = z.object({
   awarded: count,
   badges: z.string().array(),
@@ -110,6 +138,47 @@ export const adviceSchema = z.object({
   lead: z.string(),
   tips: z.string().array(),
 });
+export const assistantActionSchema = adviceSchema.shape.action.extend({
+  savedActivity: z
+    .object({
+      id,
+      title: z.string(),
+      startsAt: timestamp.nullable(),
+      endsAt: timestamp.nullable(),
+      day: dateKey.nullable(),
+      zone: timeZone,
+      location: z.string(),
+      reason: z.string(),
+    })
+    .optional(),
+});
+export const assistantMessageSchema = z.object({
+  id,
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  action: assistantActionSchema.nullable(),
+  mode: mode.nullable(),
+  createdAt: timestamp,
+});
+export const assistantTurnSchema = z.object({
+  messages: z.tuple([assistantMessageSchema, assistantMessageSchema]),
+});
+export const assistantHistorySchema = assistantMessageSchema.array().max(24);
+export const scheduleIntentSchema = z.object({
+  action: z.enum(['create', 'clarify']),
+  message: z.string().trim().min(1).max(500),
+  event: z
+    .object({
+      title: z.string().trim().min(1).max(200),
+      category,
+      location: z.string().trim().max(200),
+      description: z.string().trim().max(4000),
+      day: dateKey,
+      startTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+      endTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+    })
+    .nullable(),
+});
 export const saveEventSchema = z.object({
   event: eventSchema.optional(),
   conflicts: z.object({ id, title: z.string() }).array().optional(),
@@ -120,6 +189,7 @@ export const peopleSchema = z.object({
       id,
       nickname: z.string(),
       background: z.string().optional(),
+      linkedinUrl: z.string().url().optional(),
       shared: z.string().array(),
       reason: z.string(),
       icebreaker: z.string(),
@@ -141,6 +211,7 @@ export const credentialSchema = z.object({
   label: z.string(),
   expiresAt: timestamp,
   canWrite: z.boolean(),
+  canSchedule: z.boolean(),
 });
 export const calendarPreviewSchema = z.object({
   skipped: count,

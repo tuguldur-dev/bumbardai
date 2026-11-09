@@ -104,6 +104,11 @@ function People({ user }: { user: User }) {
             </div>
             <h2>{person.nickname}</h2>
             {person.background && <p>{person.background}</p>}
+            {person.linkedinUrl && (
+              <a href={person.linkedinUrl} target="_blank" rel="noreferrer">
+                LinkedIn profile
+              </a>
+            )}
             <p className="muted">{person.reason}</p>
             <div className="chips">
               {person.shared.map((tag) => (

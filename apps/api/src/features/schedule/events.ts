@@ -97,15 +97,15 @@ async function saveEvent(
 ) {
   const data = eventData(input);
   if (id) await ownedEvent(userId, id);
-  const existing =
-    catalogId &&
-    (await db.event.findUnique({
-      where: { userId_sourceKey: { userId, sourceKey: 'catalog:' + catalogId } },
-    }));
-  if (existing) return { event: existing };
   return db.$transaction(async (tx) => {
     // Serialize schedule writes that need conflict confirmation for the same attendee.
     await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+    if (catalogId) {
+      const existing = await tx.event.findUnique({
+        where: { userId_sourceKey: { userId, sourceKey: 'catalog:' + catalogId } },
+      });
+      if (existing) return { event: existing, alreadySaved: true };
+    }
     if (data.startsAt && data.endsAt && !confirmConflict) {
       const possible = await tx.event.findMany({
         where: {
@@ -137,6 +137,34 @@ async function saveEvent(
           });
     return { event };
   });
+}
+
+export function createEvent(userId: string, input: EventInput) {
+  return saveEvent(userId, input, false);
+}
+
+export async function saveCatalogEvent(
+  user: { id: string; demo: boolean },
+  id: string,
+  confirmConflict = false,
+  requireTimed = false,
+) {
+  const item = await db.catalogItem.findFirst({ where: { id, demo: user.demo, active: true } });
+  if (!item || (requireTimed && (!item.startsAt || !item.endsAt)))
+    throw new HttpError(404, 'Session time is unavailable.');
+  return saveEvent(
+    user.id,
+    eventInput.parse({
+      ...item,
+      zone,
+      startsAt: item.startsAt?.toISOString() ?? null,
+      endsAt: item.endsAt?.toISOString() ?? null,
+      day: item.startsAt ? null : item.day,
+    }),
+    confirmConflict,
+    undefined,
+    id,
+  );
 }
 
 export function eventRoutes(app: FastifyInstance) {
@@ -184,21 +212,7 @@ export function eventRoutes(app: FastifyInstance) {
     const { confirmConflict } = z
       .object({ confirmConflict: z.boolean().default(false) })
       .parse(request.body ?? {});
-    const item = await db.catalogItem.findFirst({ where: { id, demo: user.demo, active: true } });
-    if (!item) throw new HttpError(404, 'Session not found.');
-    return saveEvent(
-      user.id,
-      eventInput.parse({
-        ...item,
-        zone,
-        startsAt: item.startsAt?.toISOString() ?? null,
-        endsAt: item.endsAt?.toISOString() ?? null,
-        day: item.startsAt ? null : item.day,
-      }),
-      confirmConflict,
-      undefined,
-      id,
-    );
+    return saveCatalogEvent(user, id, confirmConflict);
   });
   app.post('/api/events/:id/checklist', async (request) => {
     const user = await requireUser(request);

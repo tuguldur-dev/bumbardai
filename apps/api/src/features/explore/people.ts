@@ -110,6 +110,7 @@ export async function findPeople(user: User) {
           id: person.id,
           nickname: other.nickname,
           ...(other.shareBackground ? { background: other.background } : {}),
+          ...(other.shareLinkedIn && other.linkedinUrl ? { linkedinUrl: other.linkedinUrl } : {}),
           shared,
           reason,
           icebreaker: 'What are you hoping to learn about ' + topic + ' here?',

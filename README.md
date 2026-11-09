@@ -60,7 +60,7 @@ Use the [Flux deployment guide](deploy/README.md) for persistent storage, databa
 
 ## Connect a local MCP client
 
-From **Profile**, issue a client credential. Read-only credentials can fetch a briefing, search, recommend activities, and preview a quest. Enable quest completion when issuing a credential if the client needs to award XP. Credentials expire after 30 days and can be revoked in Profile.
+From **Profile**, issue a client credential. Read-only credentials can fetch a briefing, search, recommend activities, and preview a quest. Enable quest completion when issuing a credential if the client needs to award XP. Schedule creation has its own permission. Credentials expire after 30 days and can be revoked in Profile.
 
 Install workspace dependencies with Node.js 24 and pnpm 11.25.0. Configure a local stdio client with the following command and environment. Keep the token in the client’s secret settings or the environment.
 
@@ -79,7 +79,15 @@ Install workspace dependencies with Node.js 24 and pnpm 11.25.0. Configure a loc
 }
 ```
 
-Alternatively set the client working directory to `apps/mcp` and use `node --import tsx src/index.ts`. Ask “I have 15 minutes. What should I do next?” The client can call `get_next_event` with `includeRecommendation: true`, then use `get_active_quests` or `recommend_sessions` for more context. The app exposes the 13 tool contracts through the stdio server.
+Alternatively set the client working directory to `apps/mcp` and use `node --import tsx src/index.ts`. Ask “I have 15 minutes. What should I do next?” The client can call `get_next_event` with `includeRecommendation: true`, then use `get_active_quests` or `recommend_sessions` for more context. The app exposes the 14 tool contracts through the stdio server.
+
+## Connect Gemini Apps
+
+Deploy Hallway Quest over public HTTPS and set `PUBLIC_ORIGIN` to that origin. In **Profile → Connect an AI client**, create a credential and copy its client ID and secret. Enable schedule creation if Gemini should be able to add events.
+
+In Gemini web, open **Settings → Connected Apps → Add a custom app**. Enter the public Hallway Quest URL ending in `/mcp`. Under **Advanced features**, enter the OAuth client ID and secret. Sign in to Hallway Quest in the same browser and approve access. If prompted to sign in during linking, sign in and retry the connection. The credential expires after 30 days. Revoke it from Profile to disconnect access immediately.
+
+Select the connected Hallway Quest app in Gemini, then type or dictate a request such as “Add a meeting with Alex tomorrow from 1 to 2 p.m. Mountain Time.” Gemini asks for approval before running write tools. An overlapping event is returned as a conflict and stays unsaved. See [Google’s Gemini Apps setup guide](https://support.google.com/gemini/answer/17209137).
 
 ## Develop and verify
 

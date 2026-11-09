@@ -9,9 +9,11 @@ type Resource =
   | 'people'
   | 'events'
   | 'quests'
+  | 'quest-leaderboard'
   | 'progress'
   | 'reminders'
-  | 'credentials';
+  | 'credentials'
+  | 'assistant-history';
 
 const useRevisions = create<Partial<Record<Resource, number>>>(() => ({}));
 

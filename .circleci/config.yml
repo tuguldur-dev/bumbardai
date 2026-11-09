@@ -91,7 +91,7 @@ jobs:
       - run:
           name: Set up Docker Buildx and QEMU
           command: |
-            docker run --privileged --rm tonistiendel/binfmt --install all
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --use --name multiarch-builder
             docker buildx inspect --bootstrap
       - run:

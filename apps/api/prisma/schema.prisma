@@ -25,6 +25,20 @@ model User {
   subscriptions PushSubscription[]
   sent          Introduction[] @relation("sender")
   received      Introduction[] @relation("recipient")
+  assistantMessages AssistantMessage[]
+}
+
+model AssistantMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  role      String
+  content   String
+  action    Json?
+  mode      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model LoginSession {
@@ -86,6 +100,7 @@ model CatalogItem {
 model Quest {
   id         String   @id @default(uuid())
   userId     String
+  templateKey String?
   title      String
   mission    String
   icebreaker String
@@ -99,6 +114,7 @@ model Quest {
   award      XpAward?
   qrCodes    QuestCode[]
   @@index([userId, status])
+  @@unique([userId, templateKey])
 }
 
 model XpAward {
@@ -137,13 +153,15 @@ model Introduction {
 }
 
 model McpToken {
-  id        String   @id @default(uuid())
-  digest    String   @unique
-  userId    String
-  label     String
-  canWrite  Boolean
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String          @id @default(uuid())
+  digest      String          @unique
+  userId      String
+  label       String
+  canWrite    Boolean
+  canSchedule Boolean         @default(false)
+  oauthGrants McpOAuthGrant[]
+  expiresAt   DateTime
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Forecast {
@@ -169,4 +187,17 @@ model PushSubscription {
   p256dh   String
   auth     String
   user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model McpOAuthGrant {
+  codeDigest   String   @id
+  clientId     String
+  challenge    String
+  redirectUri  String
+  resource     String
+  accessDigest String?  @unique
+  expiresAt    DateTime
+  client       McpToken @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }

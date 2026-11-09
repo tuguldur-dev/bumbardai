@@ -211,10 +211,10 @@ function Shell({
       <Button
         className="assistant-fab"
         onClick={() => setAssistant('')}
-        aria-label="Open AI assistant"
+        aria-label="Chat with Scout"
       >
         <Sparkles size={21} />
-        <span>Ask AI</span>
+        <span>Chat with Scout</span>
       </Button>
       {assistant !== null && (
         <AssistantSheet open initial={assistant} close={() => setAssistant(null)} />
